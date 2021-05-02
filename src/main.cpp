@@ -14,7 +14,6 @@
 
 const byte potPin = A0;
 
-
 int ledPin = 13;
 int inPin = 7;
 int val = 0;
@@ -23,39 +22,24 @@ int num = 0;
 int flag = 0;
 
 void ex_01();
-
 void ex_02();
-
 void ex_03();
-
 void ex_04();
-
 void ex_05();
-
 void ex_06();
-
 void ex_07();
-
 void ex_08();
-
 void ex_09();
-
 void ex_10();
-
 void ex_11();
-
 void ex_12();
-
 void ex_13();
-
 void ex_14();
-
 void ex_15();
-
 void ex_16();
 
 void showLED();
-
+void color(unsigned char red, unsigned char green, unsigned char blue);
 
 void setup() {
     Serial.begin(9600);
@@ -89,7 +73,7 @@ void setup() {
 
 void loop() {
 
-    ex_01();
+//    ex_01();
 //    ex_02();
 //    ex_03();
 //    ex_04();
@@ -102,7 +86,7 @@ void loop() {
 //    ex_11();
 //    ex_12();
 //    ex_13();
-//    ex_14();
+    ex_14();
 //    ex_15();
 //    ex_16();
 }
@@ -139,8 +123,8 @@ void ex_03() {
         digitalWrite(LedPin_13, LOW);
 }
 
-int buttonState = HIGH;  // variable for reading the pushbutton status
-int preState = HIGH;    //按鈕有無被按住的狀態 1=>按著 0=>放開
+int buttonState = HIGH;  // 按鈕有無被按住的狀態 LOW=>按著 HIGH=>放開
+int preState = HIGH;
 int countValue = 0;
 
 /**
@@ -266,6 +250,9 @@ void ex_10() {
     delay(timeOut);
 }
 
+/**
+ * 四位數七段顯示器基本 DEMO
+ */
 void ex_11() {
     seg7_x4_display(3, 4);
     delay(5);
@@ -303,37 +290,40 @@ void ex_12() {
     delay(5);
 }
 
+/**
+ * 接一個led，先遞增亮，接著遞減亮
+ */
 void ex_13() {
     int val;
+
+    //遞增亮
     for (val = 0; val < 256; val = val + 15) {
         analogWrite(LedPin_3, val);
         delay(100);
     }
 
+    //遞減亮
     for (val = 255; val >= 0; val = val - 15) {
         analogWrite(LedPin_3, val);
         delay(100);
     }
 }
 
+/**
+ * 使用可變電阻控制LED
+ */
 void ex_14() {
     int val;
     float volt;
-    int timeOut;
+    int v;
 
     val = analogRead(potPin);
     volt = val * 0.00488;
-//    timeOut = map(volt, 0, 255, 0, 255);
-    Serial.println(volt);
+//    Serial.println(val);
+//    Serial.println(volt);
+    delay(500);
 
     analogWrite(LedPin_3, volt);
-}
-
-// the color generating function
-void color(unsigned char red, unsigned char green, unsigned char blue) {
-    analogWrite(LedPin_red, red);
-    analogWrite(LedPin_blue, blue);
-    analogWrite(LedPin_green, green);
 }
 
 /**
@@ -364,9 +354,24 @@ void ex_15() {
     delay(1000); // delay for 1 second
 }
 
+/**
+ * the color generating function
+ * @param red
+ * @param green
+ * @param blue
+ */
+void color(unsigned char red, unsigned char green, unsigned char blue) {
+    analogWrite(LedPin_red, red);
+    analogWrite(LedPin_blue, blue);
+    analogWrite(LedPin_green, green);
+}
+
 int lightness;
 int step = 30;
-
+/**
+ * 使用一個按鈕按一下遞增led亮度
+ * 達到最亮，遞減 led 亮度
+ */
 void ex_16() {
     buttonState = digitalRead(ButtonPin_2);
 
