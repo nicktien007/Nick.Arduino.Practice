@@ -23,24 +23,41 @@ int num = 0;
 int flag = 0;
 
 void ex_01();
+
 void ex_02();
+
 void ex_03();
+
 void ex_04();
+
 void ex_05();
+
 void ex_06();
+
 void ex_07();
+
 void ex_08();
+
 void ex_09();
+
 void ex_10();
+
 void ex_11();
+
 void ex_12();
+
 void ex_13();
+
 void ex_14();
+
 void ex_15();
+
 void ex_16();
+
 void ex_17();
 
 void showLED();
+
 void color(unsigned char red, unsigned char green, unsigned char blue);
 
 void setup() {
@@ -374,6 +391,7 @@ void color(unsigned char red, unsigned char green, unsigned char blue) {
 
 int lightness;
 int step = 30;
+
 /**
  * 使用一個按鈕按一下遞增led亮度
  * 達到最亮，遞減 led 亮度
@@ -404,50 +422,41 @@ void ex_16() {
 int target = 8;
 int guessVal = 0;
 bool isGuess = false;
+unsigned long timeNow = 0;
+
 void ex_17() {
+    delay(100);
     buttonState = digitalRead(ButtonPin_10);
-    Serial.println(isGuess);
 
     if (buttonState == HIGH      //放開按鈕
         && preState == LOW) {
-//        delay(100);
 
-        Serial.println("A");
         isGuess = !isGuess;
         guessVal = num;
 
         preState = HIGH;
-        return;
     } else if (buttonState == LOW) {  //按住按鈕
-        Serial.println("B");
-
         preState = LOW;
-        return;
-//        delay(100);
     }
 
-    delay(500);
-
-    if (isGuess){
+    if (isGuess) {
         seg7_x1_display(guessVal);
 
-        if (guessVal == target){
+        if (guessVal == target) {
             digitalWrite(LedPin_11, HIGH);
-        }
-        else{
+        } else {
             digitalWrite(LedPin_11, LOW);
         }
+    } else {
+        int val = analogRead(potPin);
+        int timeOut = map(val, 0, 1023, 50, 2000);
 
-        return;
+        //Serial.println(timeOut);
+
+        if (millis() >= timeNow + timeOut) {
+            num = random(0, 9);
+            timeNow += timeOut;
+            seg7_x1_display(num);
+        }
     }
-
-    int val = analogRead(potPin);
-    int timeOut = map(val, 0, 1023, 50, 2000);
-
-//        delay(100);
-    Serial.println(timeOut);
-
-    num = random(0,9);
-    delay(timeOut);
-    seg7_x1_display(num);
 }
