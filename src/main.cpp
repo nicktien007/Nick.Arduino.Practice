@@ -6,6 +6,7 @@
 #define LedPin_2 2
 #define LedPin_3 3
 #define LedPin_5 5
+#define LedPin_11 11
 #define LedPin_13 13
 
 #define LedPin_red 11
@@ -37,6 +38,7 @@ void ex_13();
 void ex_14();
 void ex_15();
 void ex_16();
+void ex_17();
 
 void showLED();
 void color(unsigned char red, unsigned char green, unsigned char blue);
@@ -51,18 +53,21 @@ void setup() {
 //    pinMode(inPin, INPUT);
 //
 //    pinMode(LedPin_13, OUTPUT);
-    pinMode(ButtonPin_2, INPUT_PULLUP);
+//    pinMode(ButtonPin_2, INPUT_PULLUP);
 //    digitalWrite(LedPin_13, LOW);
 
 //    pinMode(potPin, INPUT);
 
-//    pinMode(ButtonPin_10, INPUT_PULLUP);
+    pinMode(ButtonPin_10, INPUT_PULLUP);
 
-//    seg7_x1_init(LedPin_2);
+    seg7_x1_init(LedPin_2);
 
 //    seg7_x4_init(LedPin_2);
-//    randomSeed(analogRead(A0));
-//    num=random(0,10000);
+    randomSeed(analogRead(A0));
+//    num = random(0,10000);
+//    num = random(0,9);
+    pinMode(LedPin_11, OUTPUT);
+
 
     pinMode(LedPin_3, OUTPUT);
 //    pinMode(LedPin_13, OUTPUT); // sets the ledPin to be an output
@@ -86,9 +91,10 @@ void loop() {
 //    ex_11();
 //    ex_12();
 //    ex_13();
-    ex_14();
+//    ex_14();
 //    ex_15();
 //    ex_16();
+    ex_17();
 }
 
 /**
@@ -123,7 +129,7 @@ void ex_03() {
         digitalWrite(LedPin_13, LOW);
 }
 
-int buttonState = HIGH;  // 按鈕有無被按住的狀態 LOW=>按著 HIGH=>放開
+int buttonState = HIGH;  // 按鈕狀態 LOW=>按著 HIGH=>放開
 int preState = HIGH;
 int countValue = 0;
 
@@ -393,4 +399,55 @@ void ex_16() {
         delay(100);
     }
     analogWrite(LedPin_3, lightness);
+}
+
+int target = 8;
+int guessVal = 0;
+bool isGuess = false;
+void ex_17() {
+    buttonState = digitalRead(ButtonPin_10);
+    Serial.println(isGuess);
+
+    if (buttonState == HIGH      //放開按鈕
+        && preState == LOW) {
+//        delay(100);
+
+        Serial.println("A");
+        isGuess = !isGuess;
+        guessVal = num;
+
+        preState = HIGH;
+        return;
+    } else if (buttonState == LOW) {  //按住按鈕
+        Serial.println("B");
+
+        preState = LOW;
+        return;
+//        delay(100);
+    }
+
+    delay(500);
+
+    if (isGuess){
+        seg7_x1_display(guessVal);
+
+        if (guessVal == target){
+            digitalWrite(LedPin_11, HIGH);
+        }
+        else{
+            digitalWrite(LedPin_11, LOW);
+        }
+
+        return;
+    }
+
+    int val = analogRead(potPin);
+    int timeOut = map(val, 0, 1023, 50, 2000);
+
+//        delay(100);
+    Serial.println(timeOut);
+
+    num = random(0,9);
+    delay(timeOut);
+    seg7_x1_display(num);
 }
