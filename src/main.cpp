@@ -68,6 +68,10 @@ void showLed_18();
 
 void runEx18();
 
+void init_ex18();
+
+void init_ex18_time();
+
 void setup() {
     Serial.begin(9600);
 //
@@ -483,19 +487,29 @@ int vv;
 void ex_18() {
 
     if (Serial.available()) {
-        target =  Serial.parseInt();
-        Serial.println(target);
-        timeNow = millis();
-        timeNow2 = millis();
-        vv = 0;
-        analogWrite(LedPin_11, 0);
-        isGuess = false;
-        isStart = true;
+        init_ex18();
+        seg7_x1_display(target);
+        delay(2000);
+        init_ex18_time();
     }
 
     if (isStart){
         runEx18();
     }
+}
+
+void init_ex18_time() {
+    timeNow = millis();
+    timeNow2 = millis();
+}
+
+void init_ex18() {
+    target =  Serial.parseInt();
+    Serial.println(target);
+    vv = 0;
+    analogWrite(LedPin_11, 0);
+    isGuess = false;
+    isStart = true;
 }
 
 void runEx18() {
@@ -539,6 +553,11 @@ void runEx18() {
 int interval = 30;
 void showLed_18() {
     if (guessVal == target) {
+
+        if (guessVal == 0){
+            analogWrite(LedPin_11, 0);
+            return;
+        }
 
         if (vv >= (target * 255 / 10))
             interval = -25;
