@@ -60,6 +60,8 @@ void showLED();
 
 void color(unsigned char red, unsigned char green, unsigned char blue);
 
+void showLed();
+
 void setup() {
     Serial.begin(9600);
 //
@@ -419,9 +421,9 @@ void ex_16() {
     analogWrite(LedPin_3, lightness);
 }
 
-int target = 8;
-int guessVal = 0;
-bool isGuess = false;
+int target = 8;         //答案
+int guessVal = 0;       //儲存每次按下按鈕猜測的數字
+bool isGuess = false;   //是否正在
 unsigned long timeNow = 0;
 
 void ex_17() {
@@ -431,32 +433,39 @@ void ex_17() {
     if (buttonState == HIGH      //放開按鈕
         && preState == LOW) {
 
-        isGuess = !isGuess;
-        guessVal = num;
+        isGuess = !isGuess; //每次放開按鈕，更新是否有在猜的狀態 => 按一下:猜，按一下:不猜
+        guessVal = num;     //把隨機數塞給guessVal，稍候7段顯示器做顯示
+        digitalWrite(LedPin_11, LOW);
 
         preState = HIGH;
-    } else if (buttonState == LOW) {  //按住按鈕
-        preState = LOW;
+        return;
     }
 
-    if (isGuess) {
-        seg7_x1_display(guessVal);
+    if (buttonState == LOW) {  //按住按鈕
+        preState = LOW;
+        return;
+    }
 
-        if (guessVal == target) {
-            digitalWrite(LedPin_11, HIGH);
-        } else {
-            digitalWrite(LedPin_11, LOW);
+    int v = analogRead(potPin);
+    int timeOut = map(v, 0, 1023, 50, 2000);
+    //這邊開始進行 Delay
+    if (millis() >= timeNow + timeOut) {
+        //如果是猜數字模式，顯示猜的數字
+        if (isGuess) {
+            seg7_x1_display(guessVal);
+            showLed();
+            return;
         }
+        num = random(0, 9);
+        timeNow += timeOut;
+        seg7_x1_display(num);
+    }
+}
+
+void showLed() {
+    if (guessVal == target) {
+        digitalWrite(LedPin_11, HIGH);
     } else {
-        int val = analogRead(potPin);
-        int timeOut = map(val, 0, 1023, 50, 2000);
-
-        //Serial.println(timeOut);
-
-        if (millis() >= timeNow + timeOut) {
-            num = random(0, 9);
-            timeNow += timeOut;
-            seg7_x1_display(num);
-        }
+        digitalWrite(LedPin_11, LOW);
     }
 }
