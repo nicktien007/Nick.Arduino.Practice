@@ -56,11 +56,15 @@ void ex_16();
 
 void ex_17();
 
+void ex_18();
+
 void showLED();
 
 void color(unsigned char red, unsigned char green, unsigned char blue);
 
 void showLed();
+
+void showLed_18();
 
 void setup() {
     Serial.begin(9600);
@@ -113,7 +117,8 @@ void loop() {
 //    ex_14();
 //    ex_15();
 //    ex_16();
-    ex_17();
+//    ex_17();
+    ex_18();
 }
 
 /**
@@ -421,10 +426,11 @@ void ex_16() {
     analogWrite(LedPin_3, lightness);
 }
 
-int target = 8;         //答案
+int target = 2;         //答案
 int guessVal = 0;       //儲存每次按下按鈕猜測的數字
 bool isGuess = false;   //是否正在
 unsigned long timeNow = 0;
+unsigned long timeNow2 = 0;
 
 void ex_17() {
     delay(100);
@@ -467,5 +473,69 @@ void showLed() {
         digitalWrite(LedPin_11, HIGH);
     } else {
         digitalWrite(LedPin_11, LOW);
+    }
+}
+
+void ex_18() {
+    delay(100);
+    buttonState = digitalRead(ButtonPin_10);
+
+    if (buttonState == HIGH      //放開按鈕
+        && preState == LOW) {
+
+        isGuess = !isGuess; //每次放開按鈕，更新是否有在猜的狀態 => 按一下:猜，按一下:不猜
+        guessVal = num;     //把隨機數塞給guessVal，稍候7段顯示器做顯示
+        digitalWrite(LedPin_11, LOW);
+
+        preState = HIGH;
+        return;
+    }
+
+    if (buttonState == LOW) {  //按住按鈕
+        preState = LOW;
+        return;
+    }
+
+    int v = analogRead(potPin);
+    int timeOut = map(v, 0, 1023, 50, 2000);
+    //這邊開始進行 Delay
+    if (millis() >= timeNow + timeOut) {
+        timeNow += timeOut;
+        //如果是猜數字模式，顯示猜的數字
+        if (isGuess) {
+            seg7_x1_display(guessVal);
+            showLed_18();
+            if (millis() >= timeNow2 + 1000) {
+            }
+            return;
+        }
+        num = random(0, 9);
+        seg7_x1_display(num);
+    }
+}
+int vv;
+int interval = 30;
+void showLed_18() {
+//    if (guessVal == target) {
+//        digitalWrite(LedPin_11, HIGH);
+//    } else {
+//        digitalWrite(LedPin_11, LOW);
+//    }
+
+    if (guessVal == target) {
+
+        if (vv >= target*255/10)
+            interval = -25;
+
+        if (vv <= 0) {
+            interval = 25;
+        }
+
+        if (millis() >= timeNow2 + 100) {
+            timeNow2 += 100;
+            analogWrite(LedPin_11, vv += interval);
+        }
+    } else {
+        analogWrite(LedPin_11, 0);
     }
 }
