@@ -66,6 +66,8 @@ void showLed();
 
 void showLed_18();
 
+void runEx18();
+
 void setup() {
     Serial.begin(9600);
 //
@@ -476,7 +478,27 @@ void showLed() {
     }
 }
 
+bool isStart = false;
+int vv;
 void ex_18() {
+
+    if (Serial.available()) {
+        target =  Serial.parseInt();
+        Serial.println(target);
+        timeNow = millis();
+        timeNow2 = millis();
+        vv = 0;
+        analogWrite(LedPin_11, 0);
+        isGuess = false;
+        isStart = true;
+    }
+
+    if (isStart){
+        runEx18();
+    }
+}
+
+void runEx18() {
     delay(100);
     buttonState = digitalRead(ButtonPin_10);
 
@@ -509,22 +531,16 @@ void ex_18() {
             }
             return;
         }
-        num = random(0, 9);
+        num = random(0, 10);
         seg7_x1_display(num);
     }
 }
-int vv;
+
 int interval = 30;
 void showLed_18() {
-//    if (guessVal == target) {
-//        digitalWrite(LedPin_11, HIGH);
-//    } else {
-//        digitalWrite(LedPin_11, LOW);
-//    }
-
     if (guessVal == target) {
 
-        if (vv >= target*255/10)
+        if (vv >= (target * 255 / 10))
             interval = -25;
 
         if (vv <= 0) {
