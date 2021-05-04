@@ -450,6 +450,7 @@ void ex_17() {
     int timeOut = map(v, 0, 1023, 50, 2000);
     //這邊開始進行 Delay
     if (millis() >= timeNow + timeOut) {
+        timeNow += timeOut;
         //如果是猜數字模式，顯示猜的數字
         if (isGuess) {
             seg7_x1_display(guessVal);
@@ -457,7 +458,6 @@ void ex_17() {
             return;
         }
         num = random(0, 9);
-        timeNow += timeOut;
         seg7_x1_display(num);
     }
 }
