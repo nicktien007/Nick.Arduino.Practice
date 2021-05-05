@@ -541,8 +541,6 @@ void runEx18() {
         if (isGuess) {
             seg7_x1_display(guessVal);
             showLed_18();
-            if (millis() >= timeNow2 + 1000) {
-            }
             return;
         }
         num = random(0, 10);
@@ -562,9 +560,8 @@ void showLed_18() {
         if (vv >= (target * 255 / 10))
             interval = -25;
 
-        if (vv <= 0) {
+        if (vv <= 0)
             interval = 25;
-        }
 
         if (millis() >= timeNow2 + 100) {
             timeNow2 += 100;
