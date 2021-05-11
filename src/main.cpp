@@ -60,6 +60,8 @@ void ex_18();
 
 void ex_19();
 
+void ex_20();
+
 void my_ISR();
 
 void showLED();
@@ -109,15 +111,15 @@ void setup() {
 //    pinMode(LedPin_blue, OUTPUT); // sets the bluePin to be an output
 
     pinMode(LedPin_13, OUTPUT);
-    digitalWrite(LedPin_13, LOW);
+//    digitalWrite(LedPin_13, LOW);
 //    attachInterrupt(digitalPinToInterrupt(ButtonPin_2), my_ISR, FALLING);
 
     // |= 通常指設為"1"的動作
     // &= 通常指設為"0"的動作
     // ~ 反向
-    EIMSK |= _BV(INT0);
-    EICRA &= ~_BV(ISC01);
-    EICRA |= _BV(ISC00);
+//    EIMSK |= _BV(INT0);
+//    EICRA &= ~_BV(ISC01);
+//    EICRA |= _BV(ISC00);
 }
 
 void loop() {
@@ -141,6 +143,7 @@ void loop() {
 //    ex_17();
 //    ex_18();
 //    ex_19();
+    ex_20();
 }
 
 /**
@@ -609,4 +612,13 @@ void my_ISR(){
 
 ISR(INT0_vect){
     my_ISR();
+}
+
+void ex_20() {
+
+    if (digitalRead(ButtonPin_2) == LOW){
+        digitalWrite(LedPin_13,HIGH);
+    } else{
+        digitalWrite(LedPin_13,LOW);
+    }
 }
