@@ -62,6 +62,8 @@ void ex_19();
 
 void ex_20();
 
+void ex_21();
+
 void my_ISR();
 
 void showLED();
@@ -77,6 +79,18 @@ void runEx18();
 void init_ex18();
 
 void init_ex18_time();
+
+void showCounter();
+void counter_ISR();
+
+const byte rowPins[4]={13,12,11,10};
+const byte colPins[4]={9,8,7,6};
+const char keymap[4][4]={
+        {'1','2','3','A'},
+        {'4','5','6','B'},
+        {'7','8','9','C'},
+        {'*','0','#','D'},
+};
 
 void setup() {
     Serial.begin(9600);
@@ -113,6 +127,7 @@ void setup() {
     pinMode(LedPin_13, OUTPUT);
 //    digitalWrite(LedPin_13, LOW);
 //    attachInterrupt(digitalPinToInterrupt(ButtonPin_2), my_ISR, FALLING);
+//    attachInterrupt(digitalPinToInterrupt(ButtonPin_2), counter_ISR, RISING);
 
     // |= 通常指設為"1"的動作
     // &= 通常指設為"0"的動作
@@ -120,6 +135,13 @@ void setup() {
 //    EIMSK |= _BV(INT0);
 //    EICRA &= ~_BV(ISC01);
 //    EICRA |= _BV(ISC00);
+
+    for (int i = 0; i < 3; i++) {
+        pinMode(rowPins[i],INPUT);
+        pinMode(colPins[i],OUTPUT);
+        digitalWrite(colPins[i], HIGH);
+        digitalWrite(rowPins[i], HIGH);
+    }
 }
 
 void loop() {
@@ -143,7 +165,9 @@ void loop() {
 //    ex_17();
 //    ex_18();
 //    ex_19();
-    ex_20();
+//    ex_20();
+//    showCounter();
+    ex_21();
 }
 
 /**
@@ -610,9 +634,9 @@ void my_ISR(){
     digitalWrite(LedPin_13,!digitalRead(LedPin_13));
 }
 
-ISR(INT0_vect){
-    my_ISR();
-}
+//ISR(INT0_vect){
+//    my_ISR();
+//}
 
 void ex_20() {
 
@@ -620,5 +644,36 @@ void ex_20() {
         digitalWrite(LedPin_13,HIGH);
     } else{
         digitalWrite(LedPin_13,LOW);
+    }
+}
+
+void counter_ISR(){
+    num++;
+    flag = 1;
+}
+
+void showCounter(){
+    if (flag == 1){
+        Serial.println(num);
+        flag = 0;
+    }
+}
+byte i,j;
+byte scanVal;
+void ex_21() {
+    for ( i = 0; i <= 3; i++) {
+        for ( j = 0; j <=3 ; j++) {
+            digitalWrite(colPins[j], LOW);
+            scanVal = digitalRead(rowPins[i]);
+
+            if (scanVal == LOW){
+                Serial.println(keymap[i][j]);
+                delay(200);
+                digitalWrite(colPins[j], HIGH);
+                break;
+            }
+
+            digitalWrite(colPins[j], HIGH);
+        }
     }
 }
