@@ -137,10 +137,11 @@ void setup() {
 //    EICRA |= _BV(ISC00);
 
     for (int i = 0; i < 3; i++) {
-        pinMode(rowPins[i],INPUT);
+//        pinMode(rowPins[i],INPUT);
+        pinMode(rowPins[i],INPUT_PULLUP);
         pinMode(colPins[i],OUTPUT);
         digitalWrite(colPins[i], HIGH);
-        digitalWrite(rowPins[i], HIGH);
+//        digitalWrite(rowPins[i], HIGH);
     }
 }
 
