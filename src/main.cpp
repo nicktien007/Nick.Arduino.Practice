@@ -58,6 +58,10 @@ void ex_17();
 
 void ex_18();
 
+void ex_19();
+
+void my_ISR();
+
 void showLED();
 
 void color(unsigned char red, unsigned char green, unsigned char blue);
@@ -82,7 +86,7 @@ void setup() {
 //    pinMode(inPin, INPUT);
 //
 //    pinMode(LedPin_13, OUTPUT);
-//    pinMode(ButtonPin_2, INPUT_PULLUP);
+    pinMode(ButtonPin_2, INPUT_PULLUP);
 //    digitalWrite(LedPin_13, LOW);
 
 //    pinMode(potPin, INPUT);
@@ -103,6 +107,17 @@ void setup() {
 //    pinMode(LedPin_red, OUTPUT); // sets the redPin to be an output
 //    pinMode(LedPin_green, OUTPUT); // sets the greenPin to be an output
 //    pinMode(LedPin_blue, OUTPUT); // sets the bluePin to be an output
+
+    pinMode(LedPin_13, OUTPUT);
+    digitalWrite(LedPin_13, LOW);
+//    attachInterrupt(digitalPinToInterrupt(ButtonPin_2), my_ISR, FALLING);
+
+    // |= 通常指設為"1"的動作
+    // &= 通常指設為"0"的動作
+    // ~ 反向
+    EIMSK |= _BV(INT0);
+    EICRA &= ~_BV(ISC01);
+    EICRA |= _BV(ISC00);
 }
 
 void loop() {
@@ -124,7 +139,8 @@ void loop() {
 //    ex_15();
 //    ex_16();
 //    ex_17();
-    ex_18();
+//    ex_18();
+//    ex_19();
 }
 
 /**
@@ -570,4 +586,27 @@ void showLed_18() {
     } else {
         analogWrite(LedPin_11, 0);
     }
+}
+
+/**
+ * 外部中斷範例(polling)
+ */
+void ex_19() {
+
+    if (digitalRead(ButtonPin_2) == HIGH){
+        flag = 1;
+    }
+
+    if (digitalRead(ButtonPin_2)==LOW && flag ==1){
+        digitalWrite(LedPin_13,!digitalRead(LedPin_13));
+        flag = 0;
+    }
+}
+
+void my_ISR(){
+    digitalWrite(LedPin_13,!digitalRead(LedPin_13));
+}
+
+ISR(INT0_vect){
+    my_ISR();
 }
