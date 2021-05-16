@@ -63,6 +63,7 @@ void ex_19();
 void ex_20();
 
 void ex_21();
+void ex_22();
 
 void my_ISR();
 
@@ -83,14 +84,19 @@ void init_ex18_time();
 void showCounter();
 void counter_ISR();
 
-const byte rowPins[4]={13,12,11,10};
-const byte colPins[4]={9,8,7,6};
+//const byte rowPins[4]={13,12,11,10};
+//const byte colPins[4]={9,8,7,6};
+const byte rowPins[4]={11,10,9,8};
+const byte colPins[4]={7,6,5,4};
 const char keymap[4][4]={
         {'1','2','3','A'},
         {'4','5','6','B'},
         {'7','8','9','C'},
         {'*','0','#','D'},
 };
+void setup555(int pin );
+
+void showKeyNumber();
 
 void setup() {
     Serial.begin(9600);
@@ -136,16 +142,23 @@ void setup() {
 //    EICRA &= ~_BV(ISC01);
 //    EICRA |= _BV(ISC00);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i <= 3; i++) {
 //        pinMode(rowPins[i],INPUT);
         pinMode(rowPins[i],INPUT_PULLUP);
         pinMode(colPins[i],OUTPUT);
         digitalWrite(colPins[i], HIGH);
 //        digitalWrite(rowPins[i], HIGH);
     }
+
+    PCICR |= 0b00000001;//enables PCINT0
+    PCMSK0 |= 0b00001111;//choose D8,9,10,11 to be active
 }
 
+int value = 0;
 void loop() {
+//    digitalWrite(8, LOW);
+
+
 
 //    ex_01();
 //    ex_02();
@@ -168,7 +181,8 @@ void loop() {
 //    ex_19();
 //    ex_20();
 //    showCounter();
-    ex_21();
+//    ex_21();
+    ex_22();
 }
 
 /**
@@ -632,12 +646,34 @@ void ex_19() {
 }
 
 void my_ISR(){
-    digitalWrite(LedPin_13,!digitalRead(LedPin_13));
+//    digitalWrite(LedPin_13,!digitalRead(LedPin_13));
+    flag = 1;
 }
 
 //ISR(INT0_vect){
 //    my_ISR();
 //}
+
+ISR(PCINT0_vect){
+    showKeyNumber();
+}
+
+void showKeyNumber() {
+    byte scanVal;
+    for ( int i = 0; i <= 3; i++) {
+        for ( int j = 0; j <=3 ; j++) {
+            digitalWrite(colPins[j], LOW);
+            scanVal = digitalRead(rowPins[i]);
+
+            if (scanVal == LOW){
+                Serial.println(keymap[i][j]);
+                digitalWrite(colPins[j], HIGH);
+                break;
+            }
+            digitalWrite(colPins[j], HIGH);
+        }
+    }
+}
 
 void ex_20() {
 
@@ -675,6 +711,14 @@ void ex_21() {
             }
 
             digitalWrite(colPins[j], HIGH);
+        }
+    }
+}
+
+void ex_22() {
+    for ( i = 0; i <= 3; i++) {
+        for ( j = 0; j <=3 ; j++) {
+            digitalWrite(colPins[j], LOW);
         }
     }
 }
