@@ -63,6 +63,7 @@ void ex_19();
 void ex_20();
 
 void ex_21();
+
 void ex_22();
 
 void my_ISR();
@@ -82,19 +83,21 @@ void init_ex18();
 void init_ex18_time();
 
 void showCounter();
+
 void counter_ISR();
 
 //const byte rowPins[4]={13,12,11,10};
 //const byte colPins[4]={9,8,7,6};
-const byte rowPins[4]={11,10,9,8};
-const byte colPins[4]={7,6,5,4};
-const char keymap[4][4]={
-        {'1','2','3','A'},
-        {'4','5','6','B'},
-        {'7','8','9','C'},
-        {'*','0','#','D'},
+const byte rowPins[4] = {11, 10, 9, 8};
+const byte colPins[4] = {7, 6, 5, 4};
+const char keymap[4][4] = {
+        {'1', '2', '3', 'A'},
+        {'4', '5', '6', 'B'},
+        {'7', '8', '9', 'C'},
+        {'*', '0', '#', 'D'},
 };
-void setup555(int pin );
+
+void setup555(int pin);
 
 void showKeyNumber();
 
@@ -144,8 +147,8 @@ void setup() {
 
     for (int i = 0; i <= 3; i++) {
 //        pinMode(rowPins[i],INPUT);
-        pinMode(rowPins[i],INPUT_PULLUP);
-        pinMode(colPins[i],OUTPUT);
+        pinMode(rowPins[i], INPUT_PULLUP);
+        pinMode(colPins[i], OUTPUT);
         digitalWrite(colPins[i], HIGH);
 //        digitalWrite(rowPins[i], HIGH);
     }
@@ -155,6 +158,7 @@ void setup() {
 }
 
 int value = 0;
+
 void loop() {
 //    digitalWrite(8, LOW);
 
@@ -542,6 +546,7 @@ void showLed() {
 
 bool isStart = false;
 int vv;
+
 void ex_18() {
 
     if (Serial.available()) {
@@ -551,7 +556,7 @@ void ex_18() {
         init_ex18_time();
     }
 
-    if (isStart){
+    if (isStart) {
         runEx18();
     }
 }
@@ -562,7 +567,7 @@ void init_ex18_time() {
 }
 
 void init_ex18() {
-    target =  Serial.parseInt();
+    target = Serial.parseInt();
     Serial.println(target);
     vv = 0;
     analogWrite(LedPin_11, 0);
@@ -607,10 +612,11 @@ void runEx18() {
 }
 
 int interval = 30;
+
 void showLed_18() {
     if (guessVal == target) {
 
-        if (guessVal == 0){
+        if (guessVal == 0) {
             analogWrite(LedPin_11, 0);
             return;
         }
@@ -635,17 +641,17 @@ void showLed_18() {
  */
 void ex_19() {
 
-    if (digitalRead(ButtonPin_2) == HIGH){
+    if (digitalRead(ButtonPin_2) == HIGH) {
         flag = 1;
     }
 
-    if (digitalRead(ButtonPin_2)==LOW && flag ==1){
-        digitalWrite(LedPin_13,!digitalRead(LedPin_13));
+    if (digitalRead(ButtonPin_2) == LOW && flag == 1) {
+        digitalWrite(LedPin_13, !digitalRead(LedPin_13));
         flag = 0;
     }
 }
 
-void my_ISR(){
+void my_ISR() {
 //    digitalWrite(LedPin_13,!digitalRead(LedPin_13));
     flag = 1;
 }
@@ -654,56 +660,58 @@ void my_ISR(){
 //    my_ISR();
 //}
 
-ISR(PCINT0_vect){
+ISR(PCINT0_vect) {
     showKeyNumber();
 }
 
+byte i, j;
+byte scanVal;
+bool doShow = false;
+char showVal = 0;
 void showKeyNumber() {
-    byte scanVal;
-    for ( int i = 0; i <= 3; i++) {
-        for ( int j = 0; j <=3 ; j++) {
+    for (i = 0; i <= 3; i++) {
+        for (j = 0; j <= 3; j++) {
             digitalWrite(colPins[j], LOW);
             scanVal = digitalRead(rowPins[i]);
+            digitalWrite(colPins[j], HIGH);
 
-            if (scanVal == LOW){
-                Serial.println(keymap[i][j]);
-                digitalWrite(colPins[j], HIGH);
+            if (scanVal == LOW) {
+                showVal = keymap[i][j];
+                doShow = true;
                 break;
             }
-            digitalWrite(colPins[j], HIGH);
         }
     }
 }
 
 void ex_20() {
 
-    if (digitalRead(ButtonPin_2) == LOW){
-        digitalWrite(LedPin_13,HIGH);
-    } else{
-        digitalWrite(LedPin_13,LOW);
+    if (digitalRead(ButtonPin_2) == LOW) {
+        digitalWrite(LedPin_13, HIGH);
+    } else {
+        digitalWrite(LedPin_13, LOW);
     }
 }
 
-void counter_ISR(){
+void counter_ISR() {
     num++;
     flag = 1;
 }
 
-void showCounter(){
-    if (flag == 1){
+void showCounter() {
+    if (flag == 1) {
         Serial.println(num);
         flag = 0;
     }
 }
-byte i,j;
-byte scanVal;
+
 void ex_21() {
-    for ( i = 0; i <= 3; i++) {
-        for ( j = 0; j <=3 ; j++) {
+    for (i = 0; i <= 3; i++) {
+        for (j = 0; j <= 3; j++) {
             digitalWrite(colPins[j], LOW);
             scanVal = digitalRead(rowPins[i]);
 
-            if (scanVal == LOW){
+            if (scanVal == LOW) {
                 Serial.println(keymap[i][j]);
                 delay(200);
                 digitalWrite(colPins[j], HIGH);
@@ -716,9 +724,12 @@ void ex_21() {
 }
 
 void ex_22() {
-    for ( i = 0; i <= 3; i++) {
-        for ( j = 0; j <=3 ; j++) {
-            digitalWrite(colPins[j], LOW);
-        }
+    if (doShow) {
+        Serial.println(showVal);
+        doShow = false;
+    }
+
+    for (j = 0; j <= 3; j++) {
+        digitalWrite(colPins[j], LOW);
     }
 }
