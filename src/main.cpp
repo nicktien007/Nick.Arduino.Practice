@@ -157,13 +157,7 @@ void setup() {
     PCMSK0 |= 0b00001111;//choose D8,9,10,11 to be active
 }
 
-int value = 0;
-
 void loop() {
-//    digitalWrite(8, LOW);
-
-
-
 //    ex_01();
 //    ex_02();
 //    ex_03();
@@ -652,8 +646,7 @@ void ex_19() {
 }
 
 void my_ISR() {
-//    digitalWrite(LedPin_13,!digitalRead(LedPin_13));
-    flag = 1;
+    digitalWrite(LedPin_13,!digitalRead(LedPin_13));
 }
 
 //ISR(INT0_vect){
@@ -723,6 +716,11 @@ void ex_21() {
     }
 }
 
+/**
+ * HW-2(Keymap)
+ * https://thewanderingengineer.com/2014/08/11/arduino-pin-change-interrupts/
+ * https://blog.csdn.net/acktomas/article/details/88365129
+ */
 void ex_22() {
     if (doShow) {
         Serial.println(showVal);
