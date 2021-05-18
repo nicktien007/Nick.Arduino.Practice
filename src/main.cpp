@@ -66,6 +66,8 @@ void ex_21();
 
 void ex_22();
 
+void ex_23();
+
 void my_ISR();
 
 void showLED();
@@ -85,6 +87,8 @@ void init_ex18_time();
 void showCounter();
 
 void counter_ISR();
+
+void setupTimer();
 
 //const byte rowPins[4]={13,12,11,10};
 //const byte colPins[4]={9,8,7,6};
@@ -145,16 +149,18 @@ void setup() {
 //    EICRA &= ~_BV(ISC01);
 //    EICRA |= _BV(ISC00);
 
-    for (int i = 0; i <= 3; i++) {
-//        pinMode(rowPins[i],INPUT);
-        pinMode(rowPins[i], INPUT_PULLUP);
-        pinMode(colPins[i], OUTPUT);
-        digitalWrite(colPins[i], HIGH);
-//        digitalWrite(rowPins[i], HIGH);
-    }
+//    for (int i = 0; i <= 3; i++) {
+////        pinMode(rowPins[i],INPUT);
+//        pinMode(rowPins[i], INPUT_PULLUP);
+//        pinMode(colPins[i], OUTPUT);
+//        digitalWrite(colPins[i], HIGH);
+////        digitalWrite(rowPins[i], HIGH);
+//    }
+//
+//    PCICR |= 0b00000001;//enables PCINT0
+//    PCMSK0 |= 0b00001111;//choose D8,9,10,11 to be active
 
-    PCICR |= 0b00000001;//enables PCINT0
-    PCMSK0 |= 0b00001111;//choose D8,9,10,11 to be active
+    setupTimer();
 }
 
 void loop() {
@@ -180,7 +186,8 @@ void loop() {
 //    ex_20();
 //    showCounter();
 //    ex_21();
-    ex_22();
+//    ex_22();
+    ex_23();
 }
 
 /**
@@ -667,7 +674,7 @@ void showKeyNumber() {
             digitalWrite(colPins[j], LOW);
             scanVal = digitalRead(rowPins[i]);
             digitalWrite(colPins[j], HIGH);
-
+            delay(200);
             if (scanVal == LOW) {
                 showVal = keymap[i][j];
                 doShow = true;
@@ -730,4 +737,31 @@ void ex_22() {
     for (j = 0; j <= 3; j++) {
         digitalWrite(colPins[j], LOW);
     }
+}
+
+void ex_23() {
+    for (int i = 0; i < 100; ++i) {
+        Serial.println(i);
+    }
+}
+
+ISR(TIMER1_COMPA_vect){
+    digitalWrite(LedPin_13, !digitalRead(LedPin_13));
+}
+
+void setupTimer(){
+    //init 暫存器
+    TCCR1A = 0;
+    TCCR1B = 0;
+    TCNT1 = 0;
+
+    //設定CTC 模式
+    TCCR1B = TCCR1B | (1 << WGM12);
+
+    //設定預先除頻倍數prescaler與正確的TOP上限值
+    TCCR1B = TCCR1B | (1 << CS12);
+    OCR1A = 62500;
+
+    //致能對應的中斷
+    TIMSK1 = TIMSK1 | (1<< OCIE1A);
 }
