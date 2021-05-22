@@ -68,6 +68,8 @@ void ex_22();
 
 void ex_23();
 
+void ex_24();
+
 void my_ISR();
 
 void showLED();
@@ -88,7 +90,8 @@ void showCounter();
 
 void counter_ISR();
 
-void setupTimer();
+void setupTimer_ex23();
+void setupTimer_ex24();
 
 //const byte rowPins[4]={13,12,11,10};
 //const byte colPins[4]={9,8,7,6};
@@ -100,8 +103,6 @@ const char keymap[4][4] = {
         {'7', '8', '9', 'C'},
         {'*', '0', '#', 'D'},
 };
-
-void setup555(int pin);
 
 void showKeyNumber();
 
@@ -115,16 +116,15 @@ void setup() {
 //    pinMode(inPin, INPUT);
 //
 //    pinMode(LedPin_13, OUTPUT);
-    pinMode(ButtonPin_2, INPUT_PULLUP);
 //    digitalWrite(LedPin_13, LOW);
 
 //    pinMode(potPin, INPUT);
 
     pinMode(ButtonPin_10, INPUT_PULLUP);
 
-    seg7_x1_init(LedPin_2);
+//    seg7_x1_init(LedPin_2);
 
-//    seg7_x4_init(LedPin_2);
+    seg7_x4_init(LedPin_2);
     randomSeed(analogRead(A0));
 //    num = random(0,10000);
 //    num = random(0,9);
@@ -160,7 +160,8 @@ void setup() {
 //    PCICR |= 0b00000001;//enables PCINT0
 //    PCMSK0 |= 0b00001111;//choose D8,9,10,11 to be active
 
-    setupTimer();
+//    setupTimer_ex23();
+    setupTimer_ex24();
 }
 
 void loop() {
@@ -187,7 +188,8 @@ void loop() {
 //    showCounter();
 //    ex_21();
 //    ex_22();
-    ex_23();
+//    ex_23();
+//    ex_24();
 }
 
 /**
@@ -353,23 +355,24 @@ void ex_10() {
  * 四位數七段顯示器基本 DEMO
  */
 void ex_11() {
-    seg7_x4_display(3, 4);
+    seg7_x4_display(3, 3);
     delay(5);
-    seg7_x4_display(2, 3);
+    seg7_x4_display(2, 2);
     delay(5);
-    seg7_x4_display(1, 2);
+    seg7_x4_display(1, 1);
     delay(5);
-    seg7_x4_display(0, 9);
+    seg7_x4_display(0, 0);
     delay(5);
 }
-
+int dig0 = 0;
+int dig1 = 1;
+int dig2 = 2;
+int dig3 = 3;
 /**
  * 練習4-1 使用四位數的七段顯器來顯示0000~9999的亂數，持續監聽serial port
  * 當pc端輸入任一按鍵後，就換下一組亂數
  */
 void ex_12() {
-    int dig0, dig1, dig2, dig3;
-
     if (Serial.available()) {
         num = random(0, 10000);
         Serial.println(num);
@@ -499,7 +502,10 @@ int target = 2;         //答案
 int guessVal = 0;       //儲存每次按下按鈕猜測的數字
 bool isGuess = false;   //是否正在
 unsigned long timeNow = 0;
+unsigned long timeNow0 = 0;
+unsigned long timeNow1 = 0;
 unsigned long timeNow2 = 0;
+unsigned long timeNow3 = 0;
 
 void ex_17() {
     delay(100);
@@ -746,10 +752,21 @@ void ex_23() {
 }
 
 ISR(TIMER1_COMPA_vect){
-    digitalWrite(LedPin_13, !digitalRead(LedPin_13));
+//    digitalWrite(LedPin_13, !digitalRead(LedPin_13));
+    seg7_x4_display(0, dig0);
+    delay(5);
+    seg7_x4_display(1, dig1);
+    delay(5);
+
+    seg7_x4_display(2, dig2);
+    delay(5);
+
+    seg7_x4_display(3, dig3);
+    delay(5);
+
 }
 
-void setupTimer(){
+void setupTimer_ex23(){
     //init 暫存器
     TCCR1A = 0;
     TCCR1B = 0;
@@ -764,4 +781,170 @@ void setupTimer(){
 
     //致能對應的中斷
     TIMSK1 = TIMSK1 | (1<< OCIE1A);
+}
+
+bool isAvailable = false;
+bool timer2_isDone = false;
+
+void ex_24() {
+//    Serial.println("a");
+//    if (Serial.available()) {
+//        isAvailable = true;
+//        timer2_isDone = false;
+////        Serial.println("available!!");
+////        Serial.println(num);
+//        Serial.read();
+//    }
+}
+
+bool d0_isShow = false;
+bool goTimer2 = false;
+int timeOut0 = 2000;
+int timeOut1 = timeOut0*2;
+int timeOut2 = timeOut0*3;
+int timeOut3 = timeOut0*4;
+ISR(TIMER2_COMPA_vect){
+
+    if (Serial.available() && !goTimer2) {
+        isAvailable = true;
+        timer2_isDone = false;
+        goTimer2 = true;
+        Serial.read();
+    }
+
+//    if (isAvailable && !timer2_isDone){
+    if (isAvailable && goTimer2 ){
+//    if (isAvailable ){
+//        Serial.println("TIMER2_COMPA_vect isAvailable!!");
+//        Serial.println("B");
+
+        num = random(0, 10000);
+
+        Serial.println(num);
+
+        dig3 = num / 1000;
+        dig2 = (num / 100) % 10;
+        dig1 = (num / 10) % 10;
+        dig0 = num % 10;
+
+        isAvailable = false;
+        timer2_isDone = true;
+        doShow = true;
+
+        d0_isShow = true;
+        goTimer2 = false;
+        return;
+    }
+
+
+
+    //這邊開始進行 Delay
+    if (micros() >= timeNow0 + timeOut0) {
+        timeNow0 += timeOut0;
+        seg7_x4_display(0, dig0);
+    }
+
+    if (micros() >= timeNow1 + timeOut1) {
+        timeNow1 += timeOut1;
+        seg7_x4_display(1, dig1);
+    }
+
+    if (micros() >= timeNow2 + timeOut2) {
+        timeNow2 += timeOut2;
+        seg7_x4_display(2, dig2);
+    }
+
+    if (micros() >= timeNow3 + timeOut3) {
+        timeNow3 += timeOut3;
+        seg7_x4_display(3, dig3);
+    }
+
+
+//
+//    if (millis() >= timeNow3 + timeOut) {
+//        timeNow3 += timeOut;
+//        seg7_x4_display(1, dig1);
+//    }
+//
+//    if (millis() >= timeNow4 + timeOut) {
+//        timeNow4 += timeOut;
+//        seg7_x4_display(0, dig0);
+//    }
+
+    if (d0_isShow){
+//        Serial.println("into dX_isShow");
+//        Serial.println(dig3);
+//        Serial.println(dig2);
+//        Serial.println(dig1);
+//        Serial.println(dig0);
+//        seg7_x4_display(3, dig3);
+//        delay(1);
+//        seg7_x4_display(2, dig2);
+//        delay(1);
+//        seg7_x4_display(1, dig1);
+//        delay(1);
+//        seg7_x4_display(0, dig0);
+//        delay(1);
+//        int timeOut = 10;
+//        //這邊開始進行 Delay
+//        if (millis() >= timeNow + timeOut) {
+//            timeNow += timeOut;
+//            seg7_x4_display(3, dig3);
+//        }
+//
+//        if (millis() >= timeNow2 + timeOut) {
+//            timeNow2 += timeOut;
+//            seg7_x4_display(2, dig2);
+//        }
+//
+//        if (millis() >= timeNow3 + timeOut) {
+//            timeNow3 += timeOut;
+//            seg7_x4_display(1, dig1);
+//        }
+//
+//        if (millis() >= timeNow4 + timeOut) {
+//            timeNow4 += timeOut;
+//            seg7_x4_display(0, dig0);
+//        }
+//        delayMicroseconds(10);
+//        delayMicroseconds(10);
+//        delayMicroseconds(10);
+//        delay(1);
+//        delay(1);
+//        delay(1);
+//        delay(1);
+//        d0_isShow = false;
+//        d1_isShow = false;
+//        d2_isShow = false;
+//        d3_isShow = false;
+    }
+
+    timer2_isDone = false;
+}
+#define bbs(x) (1<<x)
+void setupTimer_ex24(){
+//    //init 暫存器
+//    TCCR2A = 0;
+//    TCCR2B = 0;
+//    TCNT2 = 0;
+//
+//    //設定CTC 模式
+//    TCCR2B = TCCR2B | (1 << WGM21);
+//
+//    //設定預先除頻倍數prescaler與正確的TOP上限值
+//    TCCR2B = TCCR2B | (1 << CS21);
+//    OCR2A = 63;
+//
+//    //致能對應的中斷
+//    TIMSK2 = TIMSK2 | (1<< OCIE2A);
+
+    cli();  // 禁止中斷
+    TCCR2A = bbs(WGM21);  // CTC mode 2; Clear Timer on Compare, see p.158-162
+    TCCR2B = bbs(CS22);  // Prescaler == 64; see p.162 in datasheet
+    ///// 注意 WGM22 在 TCCR2B, 但 WGM21 與 WGM20 在 TCCR2A;
+    ///// mode 由 WGM22, WGM21, WGM20 決定 (see datasheet p.158-162)
+    OCR2A = 24999;  // TOP count for CTC, 與 prescaler 有關
+    TCNT2 = 0;  // counter 歸零
+    TIMSK2 |= bbs(OCIE2A);  // enable CTC for TIMER2_COMPA_vect
+    sei();  // 允許中斷IMER2_COMPA_vect
 }
