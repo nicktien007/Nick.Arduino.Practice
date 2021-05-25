@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "music.h"  //載入音樂定義檔
 #include "seg7.h"
 
 #define ButtonPin_2 2
@@ -12,6 +13,9 @@
 #define LedPin_red 11
 #define LedPin_green 9
 #define LedPin_blue 10
+
+#define Buzzer 3  //指定蜂鳴器的接腳為D3
+
 
 const byte potPin = A0;
 
@@ -70,6 +74,12 @@ void ex_23();
 
 void ex_24();
 
+void ex_25();
+
+void ex_26();
+
+void ex_27();
+
 void my_ISR();
 
 void showLED();
@@ -107,7 +117,7 @@ const char keymap[4][4] = {
 void showKeyNumber();
 
 void setup() {
-    Serial.begin(9600);
+//    Serial.begin(9600);
 //
 //    pinMode(LedPin_13, OUTPUT);//內建LED接腳
 //    pinMode(LedPin_5, OUTPUT); //外
@@ -120,22 +130,25 @@ void setup() {
 
 //    pinMode(potPin, INPUT);
 
-    pinMode(ButtonPin_10, INPUT_PULLUP);
+//    pinMode(ButtonPin_10, INPUT_PULLUP);
 
 //    seg7_x1_init(LedPin_2);
 
-    seg7_x4_init(LedPin_2);
-    randomSeed(analogRead(A0));
+//    seg7_x4_init(LedPin_2);
+//    randomSeed(analogRead(A0));
 //    num = random(0,10000);
 //    num = random(0,9);
-    pinMode(LedPin_11, OUTPUT);
+//    pinMode(LedPin_11, OUTPUT);
 
 
-    pinMode(LedPin_3, OUTPUT);
+//    pinMode(LedPin_3, OUTPUT);
 //    pinMode(LedPin_13, OUTPUT); // sets the ledPin to be an output
 //    pinMode(LedPin_red, OUTPUT); // sets the redPin to be an output
 //    pinMode(LedPin_green, OUTPUT); // sets the greenPin to be an output
 //    pinMode(LedPin_blue, OUTPUT); // sets the bluePin to be an output
+
+    pinMode(ButtonPin_2, INPUT_PULLUP);
+    pinMode(Buzzer,OUTPUT);       //設定蜂鳴器接腳為輸出模式
 
     pinMode(LedPin_13, OUTPUT);
 //    digitalWrite(LedPin_13, LOW);
@@ -161,7 +174,7 @@ void setup() {
 //    PCMSK0 |= 0b00001111;//choose D8,9,10,11 to be active
 
 //    setupTimer_ex23();
-    setupTimer_ex24();
+//    setupTimer_ex24();
 }
 
 void loop() {
@@ -190,6 +203,9 @@ void loop() {
 //    ex_22();
 //    ex_23();
 //    ex_24();
+//    ex_25();
+//    ex_26();
+    ex_27();
 }
 
 /**
@@ -751,9 +767,9 @@ void ex_23() {
     }
 }
 
-ISR(TIMER1_COMPA_vect){
-    digitalWrite(LedPin_13, !digitalRead(LedPin_13));
-}
+//ISR(TIMER1_COMPA_vect){
+//    digitalWrite(LedPin_13, !digitalRead(LedPin_13));
+//}
 
 void setupTimer_ex23(){
     //init 暫存器
@@ -780,41 +796,41 @@ int timeOut0 = 2000;
 int timeOut1 = timeOut0 * 2;
 int timeOut2 = timeOut0 * 3;
 int timeOut3 = timeOut0 * 4;
-ISR(TIMER2_COMPA_vect){
-    if (Serial.available()) {
-        num = random(0, 10000);
-        Serial.println(num);
-
-        dig3 = num / 1000;
-        dig2 = (num / 100) % 10;
-        dig1 = (num / 10) % 10;
-        dig0 = num % 10;
-
-        Serial.read();
-        return;
-    }
-
-    //這邊開始進行 Delay
-    if (micros() >= timeNow0 + timeOut0) {
-        timeNow0 += timeOut0;
-        seg7_x4_display(0, dig0);
-    }
-
-    if (micros() >= timeNow1 + timeOut1) {
-        timeNow1 += timeOut1;
-        seg7_x4_display(1, dig1);
-    }
-
-    if (micros() >= timeNow2 + timeOut2) {
-        timeNow2 += timeOut2;
-        seg7_x4_display(2, dig2);
-    }
-
-    if (micros() >= timeNow3 + timeOut3) {
-        timeNow3 += timeOut3;
-        seg7_x4_display(3, dig3);
-    }
-}
+//ISR(TIMER2_COMPA_vect){
+//    if (Serial.available()) {
+//        num = random(0, 10000);
+//        Serial.println(num);
+//
+//        dig3 = num / 1000;
+//        dig2 = (num / 100) % 10;
+//        dig1 = (num / 10) % 10;
+//        dig0 = num % 10;
+//
+//        Serial.read();
+//        return;
+//    }
+//
+//    //這邊開始進行 Delay
+//    if (micros() >= timeNow0 + timeOut0) {
+//        timeNow0 += timeOut0;
+//        seg7_x4_display(0, dig0);
+//    }
+//
+//    if (micros() >= timeNow1 + timeOut1) {
+//        timeNow1 += timeOut1;
+//        seg7_x4_display(1, dig1);
+//    }
+//
+//    if (micros() >= timeNow2 + timeOut2) {
+//        timeNow2 += timeOut2;
+//        seg7_x4_display(2, dig2);
+//    }
+//
+//    if (micros() >= timeNow3 + timeOut3) {
+//        timeNow3 += timeOut3;
+//        seg7_x4_display(3, dig3);
+//    }
+//}
 #define bbs(x) (1<<x)
 void setupTimer_ex24(){
     //init 暫存器
@@ -843,4 +859,90 @@ void setupTimer_ex24(){
 //    TCNT2 = 0;  // counter 歸零
 //    TIMSK2 |= bbs(OCIE2A);  // enable CTC for TIMER2_COMPA_vect
 //    sei();  // 允許中斷IMER2_COMPA_vect
+}
+
+void ex_25() {
+    tone(LedPin_13, 31,2000);
+    delay(3000);
+}
+
+void play0() {
+    for(int i=0;i<10;i++) {
+        digitalWrite(Buzzer,HIGH); delay(50);
+        digitalWrite(Buzzer,LOW); delay(200);
+    }
+}
+
+void play1() {
+    for(int i=0;i<5;i++) {
+        digitalWrite(Buzzer,HIGH); delay(600);
+        digitalWrite(Buzzer,LOW); delay(100);
+    }
+}
+
+void play2() {
+    for(int i=0;i<5;i++) {
+        digitalWrite(Buzzer,HIGH); delay(300);
+        digitalWrite(Buzzer,LOW); delay(50);
+        digitalWrite(Buzzer,HIGH); delay(50);
+        digitalWrite(Buzzer,LOW); delay(50);
+        digitalWrite(Buzzer,HIGH); delay(50);
+        digitalWrite(Buzzer,LOW); delay(50);
+    }
+}
+
+/**
+ * 有源蜂鳴器範例
+ */
+void ex_26() {
+    //讀取Button接腳的電位是否為LOW
+    if (digitalRead(ButtonPin_2) == LOW)  {
+        num = ++num % 3;
+        flag = 1;
+    }
+    //若是，就代表按下開關，num+1後取3的餘數
+    if (flag == 1) {
+        switch (num) {
+            case 0:
+                play0();
+                break;
+            case 1:
+                play1();
+                break;
+            case 2:
+                play2();
+        }
+        flag = 0;
+    }
+}
+
+int speed[3]={S140, S80, S60};   //三首歌的速度
+//定義音高,XX表結束
+int pitch[3][30]={
+        {G4,E4,E4,0,F4,D4,D4,0,C4,D4,E4,F4,G4,G4,G4,0,XX},     //小蜜蜂
+        {C4,C4,D4,E4,E4,D4,C4,D4,E4,C4,0,E4,E4,F4,G4,G4,F4,E4,F4,G4,E4,0,XX},//蝴蝶
+        {C4,C4,D4,F4,G4,F4,G4,A4,0,C5,A4,A4,G4,F4,G4,0,0,XX}}; //望春風
+//定義節拍
+float tempo[3][30]={
+        {T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4 },      //小蜜蜂
+        {T4,T8,T8,T4,T4,T8,T8,T8,T8,T4,T4,T4,T8,T8,T4,T4,T8,T8,T8,T8,T4,T4},//蝴蝶
+        {T4d,T8,T4,T4,T4,T8,T8,T4,T4,T4d,T8,T8,T8,T4,T2,T4,T4}}; //望春風
+
+void play(int num) {
+    int i, T1time, duration;
+    T1time=4*60000/speed[num];          //計算全音符T1的時間(ms)
+    for(i=0;;i++) {
+        if(pitch[num][i]==9999) return;   //判斷結尾
+        duration=T1time*tempo[num][i];    //計算節拍時間(ms)
+        tone(Buzzer,pitch[num][i],duration/2);  //演奏一半
+        delay(duration/2);                //停頓一半，才不會所有的音都連在一起
+    }
+}
+/**
+ * 無源蜂鳴器範例
+ */
+void ex_27() {
+    if(digitalRead(ButtonPin_2)==LOW)  //讀取Button接腳的電位是否為LOW
+    { num=++num%3; flag=1; }    //若是，就代表按下開關，num+1後取3的餘數
+    if(flag==1) { play(num); flag=0; }
 }
