@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "music.h"  //載入音樂定義檔
 #include "seg7.h"
+#include "DHT.h"
 
 #define ButtonPin_2 2
 #define ButtonPin_10 10
@@ -15,6 +16,9 @@
 #define LedPin_blue 10
 
 #define Buzzer 3  //指定蜂鳴器的接腳為D3
+#define DHpin  8
+#define dhtType DHT11
+
 
 
 const byte potPin = A0;
@@ -80,6 +84,10 @@ void ex_26();
 
 void ex_27();
 
+void ex_28();
+
+void ex_29();
+
 void my_ISR();
 
 void showLED();
@@ -115,9 +123,9 @@ const char keymap[4][4] = {
 };
 
 void showKeyNumber();
-
+DHT dht(DHpin, dhtType);
 void setup() {
-//    Serial.begin(9600);
+    Serial.begin(9600);
 //
 //    pinMode(LedPin_13, OUTPUT);//內建LED接腳
 //    pinMode(LedPin_5, OUTPUT); //外
@@ -147,8 +155,9 @@ void setup() {
 //    pinMode(LedPin_green, OUTPUT); // sets the greenPin to be an output
 //    pinMode(LedPin_blue, OUTPUT); // sets the bluePin to be an output
 
-    pinMode(ButtonPin_2, INPUT_PULLUP);
-    pinMode(Buzzer,OUTPUT);       //設定蜂鳴器接腳為輸出模式
+//    pinMode(ButtonPin_2, INPUT_PULLUP);
+//    pinMode(Buzzer,OUTPUT);       //設定蜂鳴器接腳為輸出模式
+//    pinMode(DHpin,OUTPUT);
 
     pinMode(LedPin_13, OUTPUT);
 //    digitalWrite(LedPin_13, LOW);
@@ -175,6 +184,8 @@ void setup() {
 
 //    setupTimer_ex23();
 //    setupTimer_ex24();
+
+    dht.begin();
 }
 
 void loop() {
@@ -205,7 +216,9 @@ void loop() {
 //    ex_24();
 //    ex_25();
 //    ex_26();
-    ex_27();
+//    ex_27();
+//    ex_28();
+    ex_29();
 }
 
 /**
@@ -915,34 +928,114 @@ void ex_26() {
         flag = 0;
     }
 }
-
-int speed[3]={S140, S80, S60};   //三首歌的速度
+//S140:每分鐘140拍
+int speed[3] = {S140, S80, S60};   //三首歌的速度
 //定義音高,XX表結束
-int pitch[3][30]={
-        {G4,E4,E4,0,F4,D4,D4,0,C4,D4,E4,F4,G4,G4,G4,0,XX},     //小蜜蜂
-        {C4,C4,D4,E4,E4,D4,C4,D4,E4,C4,0,E4,E4,F4,G4,G4,F4,E4,F4,G4,E4,0,XX},//蝴蝶
-        {C4,C4,D4,F4,G4,F4,G4,A4,0,C5,A4,A4,G4,F4,G4,0,0,XX}}; //望春風
+int pitch[3][30] = {
+        {G4, E4, E4, 0,  F4, D4, D4, 0,  C4, D4, E4, F4, G4, G4, G4, 0,  XX},     //小蜜蜂
+        {C4, C4, D4, E4, E4, D4, C4, D4, E4, C4, 0,  E4, E4, F4, G4, G4, F4, E4, F4, G4, E4, 0, XX},//蝴蝶
+        {C4, C4, D4, F4, G4, F4, G4, A4, 0,  C5, A4, A4, G4, F4, G4, 0, 0,   XX}}; //望春風
 //定義節拍
-float tempo[3][30]={
-        {T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4,T4 },      //小蜜蜂
-        {T4,T8,T8,T4,T4,T8,T8,T8,T8,T4,T4,T4,T8,T8,T4,T4,T8,T8,T8,T8,T4,T4},//蝴蝶
-        {T4d,T8,T4,T4,T4,T8,T8,T4,T4,T4d,T8,T8,T8,T4,T2,T4,T4}}; //望春風
+float tempo[3][30] = {
+        {T4,  T4, T4, T4, T4, T4, T4, T4, T4, T4,  T4, T4, T4, T4, T4, T4},      //小蜜蜂
+        {T4,  T8, T8, T4, T4, T8, T8, T8, T8, T4,  T4, T4, T8, T8, T4, T4, T8, T8, T8, T8, T4, T4},//蝴蝶
+        {T4d, T8, T4, T4, T4, T8, T8, T4, T4, T4d, T8, T8, T8, T4, T2, T4, T4}}; //望春風
 
 void play(int num) {
     int i, T1time, duration;
-    T1time=4*60000/speed[num];          //計算全音符T1的時間(ms)
-    for(i=0;;i++) {
-        if(pitch[num][i]==9999) return;   //判斷結尾
-        duration=T1time*tempo[num][i];    //計算節拍時間(ms)
-        tone(Buzzer,pitch[num][i],duration/2);  //演奏一半
-        delay(duration/2);                //停頓一半，才不會所有的音都連在一起
+    T1time = 4 * 60000 / speed[num];          //計算全音符T1的時間(ms)
+    for (i = 0;; i++) {
+        if (pitch[num][i] == 9999) return;   //判斷結尾
+        duration = T1time * tempo[num][i];    //計算節拍時間(ms)
+        tone(Buzzer, pitch[num][i], duration / 2);  //演奏一半
+        delay(duration / 2);                //停頓一半，才不會所有的音都連在一起
     }
 }
+
 /**
  * 無源蜂鳴器範例
  */
 void ex_27() {
-    if(digitalRead(ButtonPin_2)==LOW)  //讀取Button接腳的電位是否為LOW
-    { num=++num%3; flag=1; }    //若是，就代表按下開關，num+1後取3的餘數
-    if(flag==1) { play(num); flag=0; }
+    if (digitalRead(ButtonPin_2) == LOW)  //讀取Button接腳的電位是否為LOW
+    {
+        num = ++num % 3;
+        flag = 1;
+    }    //若是，就代表按下開關，num+1後取3的餘數
+    if (flag == 1) {
+        play(num);
+        flag = 0;
+    }
+}
+
+byte dat[5];
+byte read_data(){
+    byte data;
+    for (int i = 0; i < 8; i++) {
+        if (digitalRead(DHpin) == LOW) {
+            while (digitalRead(DHpin) == LOW);
+            delayMicroseconds((30));
+            if (digitalRead(DHpin) == HIGH) data |= (1 << (7 - i));
+            while (digitalRead(DHpin) == HIGH);
+        }
+    }
+
+    return data;
+}
+
+void start_test() {
+    digitalWrite(DHpin, LOW);
+    delay(30);
+    digitalWrite(DHpin, HIGH);
+    delayMicroseconds(40);
+    pinMode(DHpin, INPUT);
+    while (digitalRead(DHpin) == HIGH);
+    delayMicroseconds(80);
+
+    if (digitalRead(DHpin) == LOW);
+    delayMicroseconds(80);
+
+    for (int i = 0; i < 4; i++) {
+        dat[i] = read_data();
+    }
+    pinMode(DHpin, OUTPUT);
+    digitalWrite(DHpin, HIGH);
+}
+
+void ex_28() {
+    start_test();
+    Serial.print("current humdity = ");
+    Serial.print(dat[0], DEC);
+    Serial.print('.');
+    Serial.print(dat[1], DEC);
+    Serial.print('%');
+
+    Serial.print("current temperature = ");
+    Serial.print(dat[2], DEC);
+    Serial.print('.');
+    Serial.print(dat[3], DEC);
+    Serial.print('C');
+    delay(1000);
+}
+
+void ex_29() {
+
+    float h = dht.readHumidity();
+    float t = dht.readTemperature();
+    float f = dht.readTemperature(true);
+
+    if (isnan(h)|| isnan(t)|| isnan(f)){
+        Serial.println("XX");
+        return;
+    }
+
+    Serial.print("current humdity = ");
+    Serial.print(h);
+    Serial.print("%\t");
+
+    Serial.print("current temperature = ");
+    Serial.print(t);
+    Serial.print("C\t");
+    Serial.print(f);
+    Serial.print("F\n");
+    delay(5000);
 }
