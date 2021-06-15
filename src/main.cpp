@@ -2,6 +2,9 @@
 #include "music.h"  //載入音樂定義檔
 #include "seg7.h"
 #include "DHT.h"
+#include<avr/wdt.h>
+#include <avr/power.h>
+#include <avr/sleep.h>
 
 #define ButtonPin_2 2
 #define ButtonPin_10 10
@@ -15,7 +18,7 @@
 #define LedPin_green 9
 #define LedPin_blue 10
 
-#define Buzzer 3  //指定蜂鳴器的接腳為D3
+#define Buzzer 2  //指定蜂鳴器的接腳為D3
 #define DHpin  8
 #define dhtType DHT11
 
@@ -88,6 +91,14 @@ void ex_28();
 
 void ex_29();
 
+void ex_30();
+
+void ex_31();
+
+void ex_32();
+void ex_33();
+void ex_34();
+
 void my_ISR();
 
 void showLED();
@@ -110,6 +121,7 @@ void counter_ISR();
 
 void setupTimer_ex23();
 void setupTimer_ex24();
+void setupTimer_ex31();
 
 //const byte rowPins[4]={13,12,11,10};
 //const byte colPins[4]={9,8,7,6};
@@ -123,7 +135,7 @@ const char keymap[4][4] = {
 };
 
 void showKeyNumber();
-DHT dht(DHpin, dhtType);
+//DHT dht(DHpin, dhtType);
 void setup() {
     Serial.begin(9600);
 //
@@ -156,7 +168,7 @@ void setup() {
 //    pinMode(LedPin_blue, OUTPUT); // sets the bluePin to be an output
 
 //    pinMode(ButtonPin_2, INPUT_PULLUP);
-//    pinMode(Buzzer,OUTPUT);       //設定蜂鳴器接腳為輸出模式
+    pinMode(Buzzer,OUTPUT);       //設定蜂鳴器接腳為輸出模式
 //    pinMode(DHpin,OUTPUT);
 
     pinMode(LedPin_13, OUTPUT);
@@ -185,11 +197,33 @@ void setup() {
 //    setupTimer_ex23();
 //    setupTimer_ex24();
 
-    dht.begin();
+    //dht.begin();
+
+//    wdt_enable(WDTO_4S);
+//    Serial.println("System reboot......");
+//    Serial.println("Input char");
+
+//   MCUSR &= ~(1 << WDRF);
+//   WDTCSR |= (1 << WDCE) |(1<<WDE);
+//   WDTCSR = 1 << WDP3 | 1 << WDP0;
+//   WDTCSR |= (1 << WDIE);
+//   Serial.println("System reboot......");
+//   Serial.println("Input char");
+
+//    setupTimer_ex31();
+
+//    Serial.println("Initialising...");
+//    delay(100);
+//    MCUSR &= ~(1 << WDRF);
+//    WDTCSR |= (1 << WDCE) | (1 << WDE);
+////    WDTCSR = 1<<WDP3 | 1<<WDP0;
+//    WDTCSR = 1 << WDP3 ;
+//    WDTCSR |= (1 << WDIE);
+//    Serial.println("complete");
 }
 
 void loop() {
-//    ex_01();
+    ex_01();
 //    ex_02();
 //    ex_03();
 //    ex_04();
@@ -218,7 +252,11 @@ void loop() {
 //    ex_26();
 //    ex_27();
 //    ex_28();
-    ex_29();
+//    ex_29();
+//    ex_30();
+//    ex_31();
+//    ex_32();
+//    ex_33();
 }
 
 /**
@@ -687,17 +725,15 @@ void ex_19() {
     }
 }
 
-void my_ISR() {
-    digitalWrite(LedPin_13,!digitalRead(LedPin_13));
-}
+
 
 //ISR(INT0_vect){
 //    my_ISR();
 //}
 
-ISR(PCINT0_vect) {
-    showKeyNumber();
-}
+//ISR(PCINT0_vect) {
+//    showKeyNumber();
+//}
 
 byte i, j;
 byte scanVal;
@@ -805,10 +841,10 @@ void ex_24() {
     //它沒有用了...
 }
 
-int timeOut0 = 2000;
-int timeOut1 = timeOut0 * 2;
-int timeOut2 = timeOut0 * 3;
-int timeOut3 = timeOut0 * 4;
+//int timeOut0 = 2000;
+//int timeOut1 = timeOut0 * 2;
+//int timeOut2 = timeOut0 * 3;
+//int timeOut3 = timeOut0 * 4;
 //ISR(TIMER2_COMPA_vect){
 //    if (Serial.available()) {
 //        num = random(0, 10000);
@@ -1019,23 +1055,165 @@ void ex_28() {
 
 void ex_29() {
 
-    float h = dht.readHumidity();
-    float t = dht.readTemperature();
-    float f = dht.readTemperature(true);
+//    float h = dht.readHumidity();
+//    float t = dht.readTemperature();
+//    float f = dht.readTemperature(true);
 
-    if (isnan(h)|| isnan(t)|| isnan(f)){
-        Serial.println("XX");
-        return;
+//    if (isnan(h)|| isnan(t)|| isnan(f)){
+//        Serial.println("XX");
+//        return;
+//    }
+//
+//    Serial.print("current humdity = ");
+//    Serial.print(h);
+//    Serial.print("%\t");
+//
+//    Serial.print("current temperature = ");
+//    Serial.print(t);
+//    Serial.print("C\t");
+//    Serial.print(f);
+//    Serial.print("F\n");
+//    delay(5000);
+}
+
+void ex_30() {
+
+    char keyin;
+
+    if (Serial.available()>0){
+        digitalWrite(LedPin_13, HIGH);
+        keyin = Serial.read();
+        if (keyin=='x') while(1);
+        else{
+            delay(1000);
+            digitalWrite(LedPin_13, LOW);
+        }
     }
 
-    Serial.print("current humdity = ");
-    Serial.print(h);
-    Serial.print("%\t");
+    wdt_reset();
+}
 
-    Serial.print("current temperature = ");
-    Serial.print(t);
-    Serial.print("C\t");
-    Serial.print(f);
-    Serial.print("F\n");
-    delay(5000);
+volatile int f_wdt = 1,WDT_flag = 1;
+int WUP_cnt = 0;
+int WDT_cnt = 0;
+//ISR(WDT_vect){
+//    if (WDT_flag==0) {
+//        WDT_flag = 1;
+//    } else{
+//        Serial.println("WDT overrun!!");
+//    }
+//    WDT_cnt++;
+//}
+
+
+//ISR(WDT_vect){
+//    Serial.println("Timeout , not reboot");
+//    digitalWrite(LedPin_13, LOW);
+//    flag = 0;
+//}
+
+void setupTimer_ex31(){
+    //init 暫存器
+    TCCR2A = 0;
+    TCCR2B = 0;
+    TCNT2 = 0;
+
+    //設定CTC 模式
+    TCCR2B = TCCR2B | (1 << WGM21);
+
+    //設定預先除頻倍數prescaler與正確的TOP上限值
+    TCCR2B = TCCR2B | (1 << CS21);
+    OCR2A = 63; //delay 0.001s
+
+    //致能對應的中斷
+    TIMSK2 = TIMSK2 | (1<< OCIE2A);
+
+    //============================使用上面的代碼，或下面的都可以====================
+
+//    cli();  // 禁止中斷
+//    TCCR2A = bbs(WGM21);  // CTC mode 2; Clear Timer on Compare, see p.158-162
+//    TCCR2B = bbs(CS22);  // Prescaler == 64; see p.162 in datasheet
+//    ///// 注意 WGM22 在 TCCR2B, 但 WGM21 與 WGM20 在 TCCR2A;
+//    ///// mode 由 WGM22, WGM21, WGM20 決定 (see datasheet p.158-162)
+//    OCR2A = 24999;  // TOP count for CTC, 與 prescaler 有關
+//    TCNT2 = 0;  // counter 歸零
+//    TIMSK2 |= bbs(OCIE2A);  // enable CTC for TIMER2_COMPA_vect
+//    sei();  // 允許中斷IMER2_COMPA_vect
+}
+
+
+//int timeOut0 = 1000;
+//ISR(TIMER2_COMPA_vect){
+//    //這邊開始進行 Delay
+//    if (micros() >= timeNow0 + timeOut0) {
+//        timeNow0 += timeOut0;
+//
+//        num = random(0, 21);
+//        Serial.println(num);
+//    }
+//}
+
+void ex_31() {
+
+    char keyin;
+
+    if (Serial.available()>0){
+        digitalWrite(LedPin_13, HIGH);
+        keyin = Serial.read();
+        if (keyin=='x'){
+            flag = 1;
+            while(flag);
+        }
+        else{
+            delay(1000);
+            digitalWrite(LedPin_13, LOW);
+        }
+    }
+
+    asm("WDR");
+}
+
+//void enterSleep(){
+//    set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+//    sleep_enable();
+//    sleep_mode();
+//
+//    sleep_disable();
+//    power_all_enable();
+//    Serial.println("Wake up:");
+//    Serial.println(++num);
+//    delay(100);
+//}
+
+void enterSleep(){
+    Serial.println("Sleepp...");
+    delay(100);
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+    sleep_mode();
+
+//    sleep_disable();
+//    power_all_enable();
+    Serial.println("Wake up:");
+    Serial.println(WUP_cnt++);
+    delay(100);
+}
+
+void ex_32() {
+    if (f_wdt==1){
+        digitalWrite(LedPin_13,!digitalRead(LedPin_13));
+        f_wdt = 0;
+        enterSleep();
+    }
+}
+
+void ex_33() {
+    if (WDT_flag==1){
+        WDT_flag = 0;
+        if (WDT_cnt % 2){
+            enterSleep();
+        }
+    }
+
+    Serial.println(num++ % 1000);
+    delay(100);
 }
