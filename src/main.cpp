@@ -5,6 +5,7 @@
 #include<avr/wdt.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
+#include <wiring_private.h>
 
 #define ButtonPin_2 2
 #define ButtonPin_10 10
@@ -98,6 +99,7 @@ void ex_31();
 void ex_32();
 void ex_33();
 void ex_34();
+void ex_35();
 
 void my_ISR();
 
@@ -223,7 +225,7 @@ void setup() {
 }
 
 void loop() {
-    ex_01();
+//    ex_01();
 //    ex_02();
 //    ex_03();
 //    ex_04();
@@ -257,6 +259,7 @@ void loop() {
 //    ex_31();
 //    ex_32();
 //    ex_33();
+    ex_35();
 }
 
 /**
@@ -1216,4 +1219,70 @@ void ex_33() {
 
     Serial.println(num++ % 1000);
     delay(100);
+}
+
+
+int pin3PWM(int freq,int dc){
+    int i, pre[6] = {8, 32, 64, 128, 256, 1024};
+    float TOP;
+
+    pinMode(3, OUTPUT);
+    if (dc == 0){
+        digitalWrite(3,LOW);
+        return 1;
+    }
+    if (dc==100){
+        digitalWrite(3, HIGH);
+        return 1;
+    }
+    for (i = 0; i < 6; i++) {
+        TOP = 16000000 / pre[i] / freq / 2;
+        if (TOP < 255 && TOP > 0) {
+            OCR2A = TOP;
+            break;
+        }
+    }
+
+    switch (i) {
+        case 0:
+            sbi(TCCR2B,CS21);
+            break;
+        case 1:
+            sbi(TCCR2B,CS21);
+            sbi(TCCR2B,CS20);
+            break;
+        case 2:
+            sbi(TCCR2B,CS22);
+            break;
+        case 3:
+            sbi(TCCR2B,CS22);
+            sbi(TCCR2B,CS20);
+            break;
+        case 4:
+            sbi(TCCR2B,CS21);
+            sbi(TCCR2B,CS22);
+            break;
+        case 5:
+            sbi(TCCR2B,CS21);
+            sbi(TCCR2B,CS22);
+            sbi(TCCR2B,CS20);
+            break;
+        default:
+            return 0;
+    }
+    sbi(TCCR2B,WGM22);
+    sbi(TCCR2A,WGM20);
+    OCR2B = OCR2A * dc/100;
+    sbi(TCCR2A,COM2B1);
+
+    return 1;
+}
+
+
+void ex_35() {
+//    pin3PWM(31, 5);
+    pin3PWM(31, 95);
+//    delay(3000);
+//    pin3PWM(2000, 90);
+//    delay(3000);
 }
